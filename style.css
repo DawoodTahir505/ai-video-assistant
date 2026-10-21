@@ -1,0 +1,155 @@
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+
+    :root {
+        --ink: #0f1b2d;
+        --body: #3d4859;
+        --muted: #6b7686;
+        --line: #e2e6ec;
+        --paper: #f5f7fa;
+        --card: #ffffff;
+        --accent: #3347d6;
+        --accent-dark: #2837b0;
+        --accent-soft: #eceffd;
+    }
+
+    html, body, .stApp, [class*="css"] {
+        font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+        color: var(--body);
+    }
+    .stApp { background: var(--paper); }
+
+    .main .block-container {
+        max-width: 760px;
+        padding: 56px 24px 120px 24px;
+    }
+
+    #MainMenu, footer, [data-testid="stSidebar"],
+    [data-testid="collapsedControl"], [data-testid="stSidebarCollapsedControl"] {
+        display: none !important;
+    }
+    header { background: transparent !important; }
+
+    :focus-visible { outline: 2px solid var(--accent) !important; outline-offset: 2px; }
+
+    /* ---------- Brand ---------- */
+    .brand {
+        display: flex; align-items: center; gap: 10px;
+        font-size: 15px; font-weight: 700; color: var(--ink);
+        margin-bottom: 44px;
+    }
+    .brand-mark {
+        width: 30px; height: 30px; border-radius: 9px;
+        display: inline-flex; align-items: center; justify-content: center;
+        background: var(--accent); color: #fff; font-size: 11px; padding-left: 2px;
+    }
+
+    /* ---------- Hero ---------- */
+    .hero-title {
+        font-size: clamp(38px, 7vw, 60px); line-height: 1.04;
+        letter-spacing: -2.2px; font-weight: 800; color: var(--ink);
+        margin: 0 0 16px 0; padding: 0;
+    }
+    .hero-description {
+        font-size: 18px; line-height: 1.6; color: var(--muted);
+        max-width: 520px; margin-bottom: 36px;
+    }
+
+    /* ---------- Input card ---------- */
+    [data-testid="stVerticalBlockBorderWrapper"] {
+        background: var(--card);
+        border: 1px solid var(--line) !important;
+        border-radius: 18px !important;
+        box-shadow: 0 1px 2px rgba(15, 27, 45, 0.04), 0 8px 24px rgba(15, 27, 45, 0.05);
+    }
+
+    .stTextInput input {
+        border-radius: 12px !important; border: 1px solid var(--line) !important;
+        min-height: 50px; background: var(--paper) !important;
+        font-size: 15px; padding: 0 16px !important;
+    }
+    .stTextInput input:focus {
+        border-color: var(--accent) !important;
+        box-shadow: 0 0 0 3px var(--accent-soft) !important;
+    }
+
+    [data-testid="stFileUploader"] section {
+        border: 1.5px dashed #c8cfda; border-radius: 12px; background: var(--paper);
+    }
+
+    /* ---------- Tabs ---------- */
+    .stTabs [data-baseweb="tab-list"] { gap: 26px; border-bottom: 1px solid var(--line); }
+    .stTabs [data-baseweb="tab"] {
+        padding: 12px 0; font-weight: 600; font-size: 15px; color: var(--muted);
+    }
+    .stTabs [aria-selected="true"] { color: var(--ink); }
+    .stTabs [data-baseweb="tab-highlight"] { background: var(--accent); height: 2px; }
+
+    /* ---------- Buttons ---------- */
+    .stButton > button {
+        border-radius: 12px !important; min-height: 48px;
+        font-weight: 600; font-family: inherit;
+        border: 1px solid var(--line); background: var(--card); color: var(--ink);
+        transition: background .15s, border-color .15s;
+    }
+    .stButton > button:hover { border-color: var(--accent); color: var(--accent); }
+    .stButton > button[kind="primary"] {
+        background: var(--accent); border: 1px solid var(--accent); color: #fff;
+    }
+    .stButton > button[kind="primary"]:hover {
+        background: var(--accent-dark); border-color: var(--accent-dark); color: #fff;
+    }
+
+    /* ---------- Result header ---------- */
+    .result-label { color: var(--muted); font-size: 13px; font-weight: 600; margin-bottom: 8px; }
+    .result-title {
+        font-size: clamp(26px, 4.6vw, 36px); line-height: 1.18;
+        letter-spacing: -1px; font-weight: 800; color: var(--ink);
+        margin-bottom: 28px;
+    }
+
+    /* ---------- Summary ---------- */
+    .summary-wrap { padding: 12px 10px; }
+    .summary-wrap p, .summary-wrap li {
+        font-size: 16.5px; line-height: 1.8; color: var(--ink);
+    }
+    .summary-wrap li { margin-bottom: 6px; }
+
+    /* ---------- Chat ---------- */
+    .chat-intro { color: var(--muted); font-size: 14.5px; margin: 18px 0 12px 0; }
+
+    [data-testid="stChatMessage"] {
+        background: var(--card); border: 1px solid var(--line);
+        border-radius: 14px; padding: 16px 18px; margin-bottom: 12px;
+    }
+    [data-testid="stChatMessage"]:has([data-testid="stChatMessageAvatarUser"]) {
+        background: var(--accent-soft); border-color: transparent;
+    }
+    [data-testid="stChatInput"] {
+        border-radius: 14px !important; border: 1px solid var(--line) !important;
+        background: var(--card);
+    }
+
+    /* ---------- Progress ---------- */
+    .stProgress > div > div > div > div { background: var(--accent); }
+
+    @media (max-width: 760px) {
+        .main .block-container { padding: 32px 16px 100px 16px; }
+        .brand { margin-bottom: 30px; }
+        .hero-description { font-size: 16.5px; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+        * { transition: none !important; animation: none !important; }
+    }
+
+/* ---------- Features & meta ---------- */
+.feats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-top: 22px; }
+.feat { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 16px; }
+.feat b { display: block; color: var(--ink); font-size: 14.5px; margin-bottom: 4px; }
+.feat span { font-size: 13px; color: var(--muted); line-height: 1.5; }
+.result-title { margin-bottom: 12px; }
+.meta { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 22px; }
+.meta span {
+    font-size: 12.5px; font-weight: 600; color: var(--muted);
+    background: var(--card); border: 1px solid var(--line); border-radius: 999px; padding: 5px 12px;
+}
+@media (max-width: 760px) { .feats { grid-template-columns: 1fr; } }
