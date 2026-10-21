@@ -32,6 +32,11 @@ def download_audio(url: str, workdir: Path) -> Path:
         "retries": 3,
         "quiet": True,
         "no_warnings": True,
+        "extractor_args": {
+            "youtube": {
+                "player_client": ["android", "web"]
+            }
+        }
     }
 
     cookies = get_secret("YT_COOKIES")
@@ -46,8 +51,12 @@ def download_audio(url: str, workdir: Path) -> Path:
             if (info.get("duration") or 0) > max_minutes() * 60:
                 raise ValueError(f"Video is longer than {max_minutes()} minutes.")
             ydl.download([url])
-    except yt_dlp.utils.DownloadError as error:
-        raise RuntimeError(f"Download failed: {str(error)[:200]}") from error
+    except Exception as error:
+        # Graceful handling for YouTube cloud server IP blocks (403 Forbidden)
+        raise RuntimeError(
+            "YouTube blocks direct links from cloud servers (403 Forbidden). "
+            "Please switch to the **'Upload file'** tab above and upload your audio/video file directly to use the app for free with zero errors!"
+        ) from error
 
     files = [p for p in workdir.glob("source.*")]
     if not files:
