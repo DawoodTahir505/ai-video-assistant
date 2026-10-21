@@ -15,8 +15,8 @@ def validate_url(url: str) -> str:
 def download_audio(url: str, workdir: Path) -> Path:
     url = validate_url(url)
     
-    # Using an external public extractor API to bypass cloud datacenter IP blocks
-    api_url = "https://api.cobalt.tools/api/json"
+    # Using an active alternative public extractor API
+    api_url = "https://co.wuk.sh/api/json"
     headers = {
         "Accept": "application/json",
         "Content-Type": "application/json"
@@ -31,17 +31,14 @@ def download_audio(url: str, workdir: Path) -> Path:
         response = requests.post(api_url, json=payload, headers=headers, timeout=30)
         data = response.json()
         
-        # Check if the API successfully returned a download link
         if data.get("status") in ("redirect", "stream", "picker"):
             download_url = data.get("url")
             if not download_url and data.get("picker"):
-                # If it's a picker response, take the first available audio/media link
                 download_url = data["picker"][0].get("url")
                 
             if not download_url:
                 raise RuntimeError("Could not retrieve download stream from API.")
                 
-            # Download the audio file using requests stream
             audio_response = requests.get(download_url, stream=True, timeout=60)
             audio_response.raise_for_status()
             
