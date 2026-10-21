@@ -1,18 +1,9 @@
 import subprocess
 from pathlib import Path
 from urllib.parse import urlparse
+import requests
 
-import yt_dlp
-
-from config import CHUNK_SECONDS, get_secret, max_minutes
-
-try:
-    import static_ffmpeg
-
-    static_ffmpeg.add_paths()
-except Exception:
-    pass  # fall back to ffmpeg on PATH
-
+from config import CHUNK_SECONDS, max_minutes
 
 def validate_url(url: str) -> str:
     url = url.strip()
@@ -21,48 +12,54 @@ def validate_url(url: str) -> str:
         raise ValueError("Enter a valid http(s) video link.")
     return url
 
-
 def download_audio(url: str, workdir: Path) -> Path:
     url = validate_url(url)
-    opts = {
-        "format": "bestaudio/best",
-        "outtmpl": str(workdir / "source.%(ext)s"),
-        "noplaylist": True,
-        "socket_timeout": 30,
-        "retries": 3,
-        "quiet": True,
-        "no_warnings": True,
-        "extractor_args": {
-            "youtube": {
-                "player_client": ["android", "web"]
-            }
-        }
+    
+    # Using an external public extractor API to bypass cloud datacenter IP blocks
+    api_url = "https://api.cobalt.tools/api/json"
+    headers = {
+        "Accept": "application/json",
+        "Content-Type": "application/json"
+    }
+    payload = {
+        "url": url,
+        "isAudioOnly": True,
+        "downloadMode": "audio"
     }
 
-    cookies = get_secret("YT_COOKIES")
-    if cookies:
-        cookie_file = workdir / "cookies.txt"
-        cookie_file.write_text(cookies)
-        opts["cookiefile"] = str(cookie_file)
-
     try:
-        with yt_dlp.YoutubeDL(opts) as ydl:
-            info = ydl.extract_info(url, download=False)
-            if (info.get("duration") or 0) > max_minutes() * 60:
-                raise ValueError(f"Video is longer than {max_minutes()} minutes.")
-            ydl.download([url])
+        response = requests.post(api_url, json=payload, headers=headers, timeout=30)
+        data = response.json()
+        
+        # Check if the API successfully returned a download link
+        if data.get("status") in ("redirect", "stream", "picker"):
+            download_url = data.get("url")
+            if not download_url and data.get("picker"):
+                # If it's a picker response, take the first available audio/media link
+                download_url = data["picker"][0].get("url")
+                
+            if not download_url:
+                raise RuntimeError("Could not retrieve download stream from API.")
+                
+            # Download the audio file using requests stream
+            audio_response = requests.get(download_url, stream=True, timeout=60)
+            audio_response.raise_for_status()
+            
+            output_path = workdir / "source.mp3"
+            with open(output_path, "wb") as f:
+                for chunk in audio_response.iter_content(chunk_size=8192):
+                    f.write(chunk)
+                    
+            return output_path
+        else:
+            error_msg = data.get("text", "Unknown external extractor error.")
+            raise RuntimeError(f"Extraction failed: {error_msg}")
+
     except Exception as error:
-        # Graceful handling for YouTube cloud server IP blocks (403 Forbidden)
         raise RuntimeError(
-            "YouTube blocks direct links from cloud servers (403 Forbidden). "
-            "Please switch to the **'Upload file'** tab above and upload your audio/video file directly to use the app for free with zero errors!"
+            f"YouTube link processing failed: {str(error)}. "
+            "Please try another link or use the 'Upload file' tab."
         ) from error
-
-    files = [p for p in workdir.glob("source.*")]
-    if not files:
-        raise RuntimeError("Download failed: no file produced.")
-    return files[0]
-
 
 def probe_duration(path: Path) -> float:
     try:
@@ -74,7 +71,6 @@ def probe_duration(path: Path) -> float:
         return float(out.stdout.strip())
     except Exception:
         return 0.0
-
 
 def prepare_audio(src: Path, out_dir: Path) -> list:
     """Convert to mono 16 kHz 32 kbps MP3 and split into fixed-length parts."""
