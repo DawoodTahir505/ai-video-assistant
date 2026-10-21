@@ -15,7 +15,6 @@ def validate_url(url: str) -> str:
 def download_audio(url: str, workdir: Path) -> Path:
     url = validate_url(url)
     
-    # Using an active alternative public extractor API
     api_url = "https://co.wuk.sh/api/json"
     headers = {
         "Accept": "application/json",
